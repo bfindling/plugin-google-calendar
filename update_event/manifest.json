@@ -22,6 +22,14 @@
     "description": {
       "type": "string",
       "description": "New event description."
+    },
+    "location": {
+      "type": "string",
+      "description": "New event location."
+    },
+    "attendees": {
+      "type": "string",
+      "description": "Comma-separated list of attendee email addresses (e.g. 'alice@example.com, bob@example.com'). Pass 'none' to remove all attendees. Omit this parameter entirely to leave attendees unchanged. An empty string is an error."
     }
   }
 }

@@ -30,6 +30,8 @@ def format_event(event: dict) -> dict:
         "start": event["start"].get("dateTime") or event["start"].get("date"),
         "end": event["end"].get("dateTime") or event["end"].get("date"),
         "description": event.get("description"),
+        "location": event.get("location"),
+        "attendees": [entry["email"] for entry in event.get("attendees", [])],
     }
 
 
@@ -49,6 +51,16 @@ def update_event(event_id: str, params: dict) -> dict:
         body["end"] = build_time_field(params["end"])
     if "description" in params:
         body["description"] = params["description"]
+    if "location" in params:
+        body["location"] = params["location"]
+    if "attendees" in params:
+        raw = params["attendees"]
+        if raw == "":
+            raise ValueError("attendees must not be an empty string; pass 'none' to remove all attendees or omit the parameter to leave them unchanged")
+        elif raw == "none":
+            body["attendees"] = []
+        else:
+            body["attendees"] = [{"email": email.strip()} for email in raw.split(",") if email.strip()]
 
     response = requests.patch(
         f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events/{event_id}",

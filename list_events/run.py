@@ -45,6 +45,8 @@ def format_event(event: dict) -> dict:
         "start": event["start"].get("dateTime") or event["start"].get("date"),
         "end": event["end"].get("dateTime") or event["end"].get("date"),
         "description": event.get("description"),
+        "location": event.get("location"),
+        "attendees": [attendee["email"] for attendee in event.get("attendees", [])],
     }
 
 

@@ -30,10 +30,30 @@ def format_event(event: dict) -> dict:
         "start": event["start"].get("dateTime") or event["start"].get("date"),
         "end": event["end"].get("dateTime") or event["end"].get("date"),
         "description": event.get("description"),
+        "location": event.get("location"),
+        "attendees": [a["email"] for a in event.get("attendees", [])],
     }
 
 
-def create_event(title: str, start: str, end: str, description: str | None) -> dict:
+def parse_attendees(attendees: str) -> list[dict[str, str]]:
+    # An empty string is almost certainly a caller mistake; "none" is the explicit
+    # signal to clear attendees, so we surface a helpful error rather than silently
+    # treating "" the same as "none".
+    if attendees == "":
+        raise ValueError('To remove all attendees, pass "none" instead of an empty string.')
+    if attendees == "none":
+        return []
+    return [{"email": email.strip()} for email in attendees.split(",") if email.strip()]
+
+
+def create_event(
+    title: str,
+    start: str,
+    end: str,
+    description: str | None,
+    location: str | None,
+    attendees: str | None,
+) -> dict:
     config = load_config()
     headers = get_calendar_headers(config)
     calendar_id = get_calendar_id(config)
@@ -44,10 +64,14 @@ def create_event(title: str, start: str, end: str, description: str | None) -> d
         "end": build_time_field(end),
     }
 
-    # Only include description when provided; omitting it avoids sending a null field
-    # that would overwrite an existing description on a subsequent update.
+    # Only include optional fields when provided; omitting them avoids sending null
+    # fields that would overwrite existing values on a subsequent update.
     if description is not None:
         body["description"] = description
+    if location is not None:
+        body["location"] = location
+    if attendees is not None:
+        body["attendees"] = parse_attendees(attendees)
 
     response = requests.post(
         f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events",
@@ -64,8 +88,10 @@ def main() -> None:
     start = params["start"]
     end = params["end"]
     description = params.get("description")
+    location = params.get("location")
+    attendees = params.get("attendees")
 
-    event = create_event(title, start, end, description)
+    event = create_event(title, start, end, description, location, attendees)
     json.dump({"event": format_event(event)}, sys.stdout)
 
 

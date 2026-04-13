@@ -18,6 +18,14 @@
     "description": {
       "type": "string",
       "description": "Optional event description."
+    },
+    "location": {
+      "type": "string",
+      "description": "Optional event location."
+    },
+    "attendees": {
+      "type": "string",
+      "description": "Optional comma-separated list of attendee email addresses (e.g. 'alice@example.com, bob@example.com'). Pass 'none' to explicitly send an empty attendees list. Omit this parameter entirely to leave attendees unset. An empty string is an error."
     }
   }
 }
