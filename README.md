@@ -11,6 +11,7 @@ Ask Stavrobot to install https://github.com/stavrobot/plugin-google-calendar.git
 | Tool | Description |
 |------|-------------|
 | `list_events` | List upcoming events. Accepts `max_results` (default: 10). |
+| `list_events_for_day` | List all events on a specific day, regardless of whether they've already started or ended. Accepts optional `date` (YYYY-MM-DD, defaults to today in the calendar's own timezone). |
 | `create_event` | Create an event. Requires `title`, `start`, `end`; accepts optional `description`. |
 | `update_event` | Update an existing event by `event_id`. All other fields are optional. |
 | `delete_event` | Delete an event by `event_id`. |

@@ -1,0 +1,11 @@
+{
+  "name": "list_events_for_day",
+  "description": "List all events on a specific calendar day, including ones that have already started or ended. Use this instead of list_events when the user asks about a specific day (e.g. 'today', 'tomorrow', a specific date) rather than what's coming up next.",
+  "entrypoint": "run.py",
+  "parameters": {
+    "date": {
+      "type": "string",
+      "description": "The day to list events for, as YYYY-MM-DD. Defaults to today, in the calendar's own timezone, if omitted."
+    }
+  }
+}
