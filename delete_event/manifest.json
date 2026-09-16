@@ -6,6 +6,10 @@
     "event_id": {
       "type": "string",
       "description": "ID of the event to delete."
+    },
+    "calendar_id": {
+      "type": "string",
+      "description": "Which calendar the event is on. Defaults to the configured calendar_id. Use list_calendars to see available IDs."
     }
   }
 }

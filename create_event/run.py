@@ -11,7 +11,7 @@ import requests
 # The tool's CWD is create_event/, so appending ".." makes the sibling shared/ package importable.
 sys.path.append("..")
 
-from shared.auth import get_calendar_headers, get_calendar_id, load_config
+from shared.auth import get_calendar_headers, load_config, quote_calendar_id, resolve_calendar_id
 
 
 def build_time_field(value: str) -> dict[str, str]:
@@ -53,10 +53,11 @@ def create_event(
     description: str | None,
     location: str | None,
     attendees: str | None,
+    calendar_id_param: str | None,
 ) -> dict:
     config = load_config()
     headers = get_calendar_headers(config)
-    calendar_id = get_calendar_id(config)
+    calendar_id = resolve_calendar_id(config, calendar_id_param)
 
     body: dict = {
         "summary": title,
@@ -74,7 +75,7 @@ def create_event(
         body["attendees"] = parse_attendees(attendees)
 
     response = requests.post(
-        f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events",
+        f"https://www.googleapis.com/calendar/v3/calendars/{quote_calendar_id(calendar_id)}/events",
         headers=headers,
         json=body,
     )
@@ -90,8 +91,9 @@ def main() -> None:
     description = params.get("description")
     location = params.get("location")
     attendees = params.get("attendees")
+    calendar_id_param = params.get("calendar_id")
 
-    event = create_event(title, start, end, description, location, attendees)
+    event = create_event(title, start, end, description, location, attendees, calendar_id_param)
     json.dump({"event": format_event(event)}, sys.stdout)
 
 

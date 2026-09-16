@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 import requests
 
@@ -34,3 +35,16 @@ def get_calendar_headers(config: dict[str, Any]) -> dict[str, str]:
 
 def get_calendar_id(config: dict[str, Any]) -> str:
     return config["calendar_id"]
+
+
+def resolve_calendar_id(config: dict[str, Any], override: str | None) -> str:
+    # Tools accept an optional calendar_id parameter (see list_calendars) so the
+    # agent isn't stuck operating on only the one calendar set in config.json.
+    return override if override else get_calendar_id(config)
+
+
+def quote_calendar_id(calendar_id: str) -> str:
+    # Calendar IDs (e.g. the built-in holiday calendars) can contain characters
+    # like "#" that are meaningful in a URL, so this must be encoded before
+    # being inserted into a request path.
+    return quote(calendar_id, safe="")

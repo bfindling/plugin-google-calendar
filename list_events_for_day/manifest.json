@@ -6,6 +6,10 @@
     "date": {
       "type": "string",
       "description": "The day to list events for, as YYYY-MM-DD. Defaults to today, in the calendar's own timezone, if omitted."
+    },
+    "calendar_id": {
+      "type": "string",
+      "description": "Which calendar to list events from. Defaults to the configured calendar_id. Use list_calendars to see available IDs."
     }
   }
 }

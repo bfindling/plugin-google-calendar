@@ -6,6 +6,10 @@
     "max_results": {
       "type": "integer",
       "description": "Maximum number of events to return. Defaults to 10 if not provided."
+    },
+    "calendar_id": {
+      "type": "string",
+      "description": "Which calendar to list events from. Defaults to the configured calendar_id. Use list_calendars to see available IDs."
     }
   }
 }

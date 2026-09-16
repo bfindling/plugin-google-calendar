@@ -12,18 +12,18 @@ import requests
 # The tool's CWD is list_events/, so appending ".." makes the sibling shared/ package importable.
 sys.path.append("..")
 
-from shared.auth import get_calendar_headers, get_calendar_id, load_config
+from shared.auth import get_calendar_headers, load_config, quote_calendar_id, resolve_calendar_id
 
 
-def fetch_events(max_results: int) -> list[dict]:
+def fetch_events(max_results: int, calendar_id_param: str | None) -> list[dict]:
     config = load_config()
     headers = get_calendar_headers(config)
-    calendar_id = get_calendar_id(config)
+    calendar_id = resolve_calendar_id(config, calendar_id_param)
 
     now = datetime.now(timezone.utc).isoformat()
 
     response = requests.get(
-        f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events",
+        f"https://www.googleapis.com/calendar/v3/calendars/{quote_calendar_id(calendar_id)}/events",
         headers=headers,
         params={
             "timeMin": now,
@@ -53,8 +53,9 @@ def format_event(event: dict) -> dict:
 def main() -> None:
     params = json.load(sys.stdin)
     max_results = params.get("max_results", 10)
+    calendar_id_param = params.get("calendar_id")
 
-    events = fetch_events(max_results)
+    events = fetch_events(max_results, calendar_id_param)
     formatted = [format_event(event) for event in events]
 
     json.dump({"events": formatted}, sys.stdout)

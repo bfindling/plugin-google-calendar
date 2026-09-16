@@ -13,12 +13,12 @@ import requests
 # The tool's CWD is list_events_for_day/, so appending ".." makes the sibling shared/ package importable.
 sys.path.append("..")
 
-from shared.auth import get_calendar_headers, get_calendar_id, load_config
+from shared.auth import get_calendar_headers, load_config, quote_calendar_id, resolve_calendar_id
 
 
 def get_calendar_timezone(calendar_id: str, headers: dict[str, str]) -> ZoneInfo:
     response = requests.get(
-        f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}",
+        f"https://www.googleapis.com/calendar/v3/calendars/{quote_calendar_id(calendar_id)}",
         headers=headers,
     )
     response.raise_for_status()
@@ -39,17 +39,17 @@ def day_bounds(day: date, tz: ZoneInfo) -> tuple[str, str]:
     return start.isoformat(), end.isoformat()
 
 
-def fetch_events(date_param: str | None) -> list[dict]:
+def fetch_events(date_param: str | None, calendar_id_param: str | None) -> list[dict]:
     config = load_config()
     headers = get_calendar_headers(config)
-    calendar_id = get_calendar_id(config)
+    calendar_id = resolve_calendar_id(config, calendar_id_param)
 
     tz = get_calendar_timezone(calendar_id, headers)
     day = resolve_day(date_param, tz)
     time_min, time_max = day_bounds(day, tz)
 
     response = requests.get(
-        f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events",
+        f"https://www.googleapis.com/calendar/v3/calendars/{quote_calendar_id(calendar_id)}/events",
         headers=headers,
         params={
             "timeMin": time_min,
@@ -80,8 +80,9 @@ def format_event(event: dict) -> dict:
 def main() -> None:
     params = json.load(sys.stdin)
     date_param = params.get("date")
+    calendar_id_param = params.get("calendar_id")
 
-    events = fetch_events(date_param)
+    events = fetch_events(date_param, calendar_id_param)
     formatted = [format_event(event) for event in events]
 
     json.dump({"events": formatted}, sys.stdout)

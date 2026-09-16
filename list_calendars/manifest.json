@@ -1,0 +1,6 @@
+{
+  "name": "list_calendars",
+  "description": "List every Google Calendar this account has access to, with each one's calendar_id. Use this to find the calendar_id to pass to the other tools when the user wants a calendar other than their default one.",
+  "entrypoint": "run.py",
+  "parameters": {}
+}

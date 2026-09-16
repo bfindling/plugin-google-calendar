@@ -10,13 +10,16 @@ Ask Stavrobot to install https://github.com/stavrobot/plugin-google-calendar.git
 
 | Tool | Description |
 |------|-------------|
-| `list_events` | List upcoming events. Accepts `max_results` (default: 10). |
-| `list_events_for_day` | List all events on a specific day, regardless of whether they've already started or ended. Accepts optional `date` (YYYY-MM-DD, defaults to today in the calendar's own timezone). |
-| `create_event` | Create an event. Requires `title`, `start`, `end`; accepts optional `description`. |
-| `update_event` | Update an existing event by `event_id`. All other fields are optional. |
-| `delete_event` | Delete an event by `event_id`. |
+| `list_calendars` | List every calendar this account has access to, with each one's `calendar_id`. |
+| `list_events` | List upcoming events. Accepts `max_results` (default: 10) and optional `calendar_id`. |
+| `list_events_for_day` | List all events on a specific day, regardless of whether they've already started or ended. Accepts optional `date` (YYYY-MM-DD, defaults to today in the calendar's own timezone) and optional `calendar_id`. |
+| `create_event` | Create an event. Requires `title`, `start`, `end`; accepts optional `description` and `calendar_id`. |
+| `update_event` | Update an existing event by `event_id`. All other fields, including `calendar_id`, are optional. |
+| `delete_event` | Delete an event by `event_id`. Accepts optional `calendar_id`. |
 
 Times use RFC 3339 format (e.g. `2025-06-15T10:00:00Z`). All-day events use a plain date (e.g. `2025-06-15`).
+
+By default every tool operates on the `calendar_id` set in `config.json`. Pass an explicit `calendar_id` (from `list_calendars`) to target a different calendar instead, such as a shared or secondary calendar on the same account.
 
 ## Setup
 
@@ -68,7 +71,7 @@ Create `config.json` at the plugin root (next to `manifest.json`):
 }
 ```
 
-Use `"primary"` for `calendar_id` to target your main calendar, or replace it with a specific calendar ID (visible in Google Calendar settings under each calendar's details).
+Use `"primary"` for `calendar_id` to target your main calendar by default, or replace it with a specific calendar ID (visible in Google Calendar settings under each calendar's details, or via the `list_calendars` tool). Any tool call can override this per-call with its own `calendar_id` parameter.
 
 ## License
 
