@@ -1,6 +1,6 @@
 #!/usr/bin/env -S uv run
 # /// script
-# dependencies = ["google-auth", "requests"]
+# dependencies = ["google-auth", "icalendar", "recurring-ical-events", "requests"]
 # ///
 
 import json
@@ -12,10 +12,10 @@ import requests
 sys.path.append("..")
 
 from shared.auth import get_calendar_headers, load_config
+from shared.ics import list_ics_calendars
 
 
-def fetch_calendars() -> list[dict]:
-    config = load_config()
+def fetch_calendars(config: dict) -> list[dict]:
     headers = get_calendar_headers(config)
 
     calendars = []
@@ -54,8 +54,9 @@ def format_calendar(calendar: dict) -> dict:
 def main() -> None:
     json.load(sys.stdin)  # No parameters, but drain stdin to match the tool contract.
 
-    calendars = fetch_calendars()
-    formatted = [format_calendar(calendar) for calendar in calendars]
+    config = load_config()
+    calendars = fetch_calendars(config)
+    formatted = [format_calendar(calendar) for calendar in calendars] + list_ics_calendars(config)
 
     json.dump({"calendars": formatted}, sys.stdout)
 

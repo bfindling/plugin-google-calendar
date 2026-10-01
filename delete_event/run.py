@@ -1,6 +1,6 @@
 #!/usr/bin/env -S uv run
 # /// script
-# dependencies = ["google-auth", "requests"]
+# dependencies = ["google-auth", "icalendar", "recurring-ical-events", "requests"]
 # ///
 
 import json
@@ -12,12 +12,14 @@ import requests
 sys.path.append("..")
 
 from shared.auth import get_calendar_headers, load_config, quote_calendar_id, resolve_calendar_id
+from shared.ics import require_writable
 
 
 def delete_event(event_id: str, calendar_id_param: str | None) -> None:
     config = load_config()
     headers = get_calendar_headers(config)
     calendar_id = resolve_calendar_id(config, calendar_id_param)
+    require_writable(calendar_id)
 
     response = requests.delete(
         f"https://www.googleapis.com/calendar/v3/calendars/{quote_calendar_id(calendar_id)}/events/{event_id}",

@@ -1,6 +1,6 @@
 #!/usr/bin/env -S uv run
 # /// script
-# dependencies = ["google-auth", "requests"]
+# dependencies = ["google-auth", "icalendar", "recurring-ical-events", "requests"]
 # ///
 
 import json
@@ -13,7 +13,8 @@ import requests
 # The tool's CWD is list_events_for_day/, so appending ".." makes the sibling shared/ package importable.
 sys.path.append("..")
 
-from shared.auth import get_calendar_headers, load_config, quote_calendar_id, resolve_calendar_id
+from shared.auth import get_calendar_headers, get_calendar_id, load_config, quote_calendar_id, resolve_calendar_id
+from shared.ics import fetch_ics_calendar, ics_events_between, ics_timezone, is_ics_calendar
 
 
 def get_calendar_timezone(calendar_id: str, headers: dict[str, str]) -> ZoneInfo:
@@ -44,6 +45,15 @@ def fetch_events(date_param: str | None, calendar_id_param: str | None) -> list[
     headers = get_calendar_headers(config)
     calendar_id = resolve_calendar_id(config, calendar_id_param)
 
+    if is_ics_calendar(calendar_id):
+        feed = fetch_ics_calendar(config, calendar_id)
+        # Feeds often don't declare a timezone, so fall back to the default
+        # calendar's, which is the user's own.
+        tz = ics_timezone(feed) or get_calendar_timezone(get_calendar_id(config), headers)
+        day = resolve_day(date_param, tz)
+        start = datetime.combine(day, time.min, tzinfo=tz)
+        return ics_events_between(feed, start, start + timedelta(days=1))
+
     tz = get_calendar_timezone(calendar_id, headers)
     day = resolve_day(date_param, tz)
     time_min, time_max = day_bounds(day, tz)
@@ -61,7 +71,7 @@ def fetch_events(date_param: str | None, calendar_id_param: str | None) -> list[
         },
     )
     response.raise_for_status()
-    return response.json().get("items", [])
+    return [format_event(event) for event in response.json().get("items", [])]
 
 
 def format_event(event: dict) -> dict:
@@ -83,9 +93,8 @@ def main() -> None:
     calendar_id_param = params.get("calendar_id")
 
     events = fetch_events(date_param, calendar_id_param)
-    formatted = [format_event(event) for event in events]
 
-    json.dump({"events": formatted}, sys.stdout)
+    json.dump({"events": events}, sys.stdout)
 
 
 main()

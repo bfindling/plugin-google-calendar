@@ -1,6 +1,6 @@
 #!/usr/bin/env -S uv run
 # /// script
-# dependencies = ["google-auth", "requests"]
+# dependencies = ["google-auth", "icalendar", "recurring-ical-events", "requests"]
 # ///
 
 import json
@@ -12,6 +12,7 @@ import requests
 sys.path.append("..")
 
 from shared.auth import get_calendar_headers, load_config, quote_calendar_id, resolve_calendar_id
+from shared.ics import require_writable
 
 
 def build_time_field(value: str) -> dict[str, str]:
@@ -39,6 +40,7 @@ def update_event(event_id: str, params: dict) -> dict:
     config = load_config()
     headers = get_calendar_headers(config)
     calendar_id = resolve_calendar_id(config, params.get("calendar_id"))
+    require_writable(calendar_id)
 
     # PATCH sends only the fields to change; omitting a field leaves it unchanged on the server.
     body: dict = {}

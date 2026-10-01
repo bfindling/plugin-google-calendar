@@ -19,6 +19,8 @@ Ask Stavrobot to install https://github.com/stavrobot/plugin-google-calendar.git
 
 Times use RFC 3339 format (e.g. `2025-06-15T10:00:00Z`). All-day events use a plain date (e.g. `2025-06-15`).
 
+iCal feeds configured in `ics_feeds` are listed with a `calendar_id` of `ics:<name>` and work with `list_events` and `list_events_for_day`. They are read-only.
+
 By default every tool operates on the `calendar_id` set in `config.json`. Pass an explicit `calendar_id` (from `list_calendars`) to target a different calendar instead, such as a shared or secondary calendar on the same account.
 
 ## Setup
@@ -96,6 +98,22 @@ Create `config.json` at the plugin root (next to `manifest.json`):
 ```
 
 Use `"primary"` for `calendar_id` to target your main calendar by default, or replace it with a specific calendar ID (visible in Google Calendar settings under each calendar's details, or via the `list_calendars` tool). Any tool call can override this per-call with its own `calendar_id` parameter.
+
+### 6. Optional: iCal feeds
+
+Calendars you subscribed to by URL (their IDs end in `@import.calendar.google.com`)
+can't be shared with a service account. To read them anyway, add the feed's `.ics`
+URL to `config.json` under `ics_feeds`, keyed by the name the calendar should have:
+
+```json
+{
+  "ics_feeds": {"Rental": "https://example.com/calendar.ics"}
+}
+```
+
+The value may also be that object encoded as a JSON string. Feed URLs often embed
+an access token, so treat them as secrets. If a feed doesn't declare a timezone,
+`list_events_for_day` uses the timezone of the default `calendar_id`.
 
 ## License
 

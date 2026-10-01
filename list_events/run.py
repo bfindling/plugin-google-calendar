@@ -1,11 +1,11 @@
 #!/usr/bin/env -S uv run
 # /// script
-# dependencies = ["google-auth", "requests"]
+# dependencies = ["google-auth", "icalendar", "recurring-ical-events", "requests"]
 # ///
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import requests
 
@@ -13,13 +13,21 @@ import requests
 sys.path.append("..")
 
 from shared.auth import get_calendar_headers, load_config, quote_calendar_id, resolve_calendar_id
+from shared.ics import fetch_ics_calendar, ics_events_between, is_ics_calendar
+
+# Feeds have no server-side "upcoming" query, so look this far ahead instead.
+ICS_LOOKAHEAD = timedelta(days=730)
 
 
 def fetch_events(max_results: int, calendar_id_param: str | None) -> list[dict]:
     config = load_config()
-    headers = get_calendar_headers(config)
     calendar_id = resolve_calendar_id(config, calendar_id_param)
 
+    if is_ics_calendar(calendar_id):
+        now = datetime.now(timezone.utc)
+        return ics_events_between(fetch_ics_calendar(config, calendar_id), now, now + ICS_LOOKAHEAD)[:max_results]
+
+    headers = get_calendar_headers(config)
     now = datetime.now(timezone.utc).isoformat()
 
     response = requests.get(
@@ -34,7 +42,7 @@ def fetch_events(max_results: int, calendar_id_param: str | None) -> list[dict]:
         },
     )
     response.raise_for_status()
-    return response.json().get("items", [])
+    return [format_event(event) for event in response.json().get("items", [])]
 
 
 def format_event(event: dict) -> dict:
@@ -56,9 +64,8 @@ def main() -> None:
     calendar_id_param = params.get("calendar_id")
 
     events = fetch_events(max_results, calendar_id_param)
-    formatted = [format_event(event) for event in events]
 
-    json.dump({"events": formatted}, sys.stdout)
+    json.dump({"events": events}, sys.stdout)
 
 
 main()
