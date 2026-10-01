@@ -35,7 +35,31 @@ In the project, go to **APIs & Services > Library**, search for "Google Calendar
 
 Go to **APIs & Services > Credentials**, click **Create Credentials > OAuth client ID**, and choose application type **Desktop app**. Note the `client_id` and `client_secret`.
 
-### 4. Obtain a refresh token
+### 4. Choose an authentication method
+
+**Service account (recommended).** It never expires. OAuth refresh tokens are
+revoked after 7 days while the OAuth consent screen is in "Testing" status.
+
+1. Go to **IAM & Admin > Service Accounts**, create a service account (no roles
+   needed), then open it and go to **Keys > Add key > Create new key > JSON**.
+2. In Google Calendar, share each calendar you want the assistant to use with the
+   service account's email address, with **Make changes to events** permission.
+   Public calendars (e.g. holidays) don't need sharing.
+3. Set `service_account_key` in `config.json` to the contents of the JSON key file,
+   as a string, and set `calendar_id` to your calendar's ID (usually your email
+   address). `"primary"` would refer to the service account's own empty calendar.
+4. Shared calendars don't show up in `list_calendars` until they are added to the
+   service account's calendar list, which you can do once with
+   `POST https://www.googleapis.com/calendar/v3/users/me/calendarList` and body
+   `{"id": "<calendar id>"}` for each calendar.
+
+Service accounts can't invite attendees to events on personal Google accounts, so
+`create_event` and `update_event` with attendees only work with OAuth.
+
+**OAuth refresh token.** Use steps 4a and 4b below, then set `client_id`,
+`client_secret` and `refresh_token` in `config.json`.
+
+#### Obtaining a refresh token
 
 **Step 4a.** Open this URL in your browser (replace `CLIENT_ID`):
 

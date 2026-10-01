@@ -2,22 +2,26 @@
   "name": "google-calendar",
   "description": "Manage Google Calendar events.",
   "config": {
+    "service_account_key": {
+      "description": "Contents of a Google service account JSON key. Recommended over OAuth: it never expires. Share each calendar with the service account's email.",
+      "required": false
+    },
     "client_id": {
-      "description": "OAuth 2.0 client ID from Google Cloud Console.",
-      "required": true
+      "description": "OAuth 2.0 client ID from Google Cloud Console. Not needed when service_account_key is set.",
+      "required": false
     },
     "client_secret": {
-      "description": "OAuth 2.0 client secret from Google Cloud Console.",
-      "required": true
+      "description": "OAuth 2.0 client secret from Google Cloud Console. Not needed when service_account_key is set.",
+      "required": false
     },
     "refresh_token": {
-      "description": "OAuth 2.0 refresh token obtained via the authorization flow.",
-      "required": true
+      "description": "OAuth 2.0 refresh token obtained via the authorization flow. Not needed when service_account_key is set.",
+      "required": false
     },
     "calendar_id": {
       "description": "Google Calendar ID to operate on. Use \"primary\" to target the user's main calendar.",
       "required": true
     }
   },
-  "instructions": "Setup instructions for google-calendar plugin\n\n1. Create a Google Cloud project\n   - Go to https://console.cloud.google.com/\n   - Create a new project or select an existing one.\n\n2. Enable the Google Calendar API\n   - In the project, go to APIs & Services > Library.\n   - Search for \"Google Calendar API\" and click Enable.\n\n3. Create OAuth 2.0 credentials\n   - Go to APIs & Services > Credentials.\n   - Click \"Create Credentials\" > \"OAuth client ID\".\n   - Choose application type: Desktop app.\n   - Note the client_id and client_secret shown.\n\n4. Obtain a refresh token\n\n   Tell Stavrobot your client_id and client_secret. Stavrobot will generate an authorization URL and give it to you.\n\n   Open the URL in your browser, log in with your Google account, and click \"Allow\" to grant calendar access. Google will then display an authorization code on the page — copy it and paste it back to Stavrobot.\n\n   Stavrobot will exchange the code for tokens and extract the refresh_token for you.\n\n5. Set calendar_id\n\n   Use \"primary\" to target your main Google Calendar, or find a specific calendar ID in Google Calendar settings under each calendar's details page."
+  "instructions": "Setup instructions for google-calendar plugin\n\n1. Create a Google Cloud project\n   - Go to https://console.cloud.google.com/\n   - Create a new project or select an existing one.\n\n2. Enable the Google Calendar API\n   - In the project, go to APIs & Services > Library.\n   - Search for \"Google Calendar API\" and click Enable.\n\n3. Create OAuth 2.0 credentials\n   - Go to APIs & Services > Credentials.\n   - Click \"Create Credentials\" > \"OAuth client ID\".\n   - Choose application type: Desktop app.\n   - Note the client_id and client_secret shown.\n\n4. Authenticate\n\n   Recommended: create a service account (IAM & Admin > Service Accounts > Keys > Add key > JSON), share each calendar with its email (\"Make changes to events\"), put the JSON key's contents in service_account_key, and set calendar_id to your calendar's ID (not \"primary\"). Service accounts never expire, unlike OAuth refresh tokens in \"Testing\" status (7 days), but can't invite attendees on personal Google accounts.\n\n   Alternative: obtain an OAuth refresh token as follows.\n\n   Tell Stavrobot your client_id and client_secret. Stavrobot will generate an authorization URL and give it to you.\n\n   Open the URL in your browser, log in with your Google account, and click \"Allow\" to grant calendar access. Google will then display an authorization code on the page — copy it and paste it back to Stavrobot.\n\n   Stavrobot will exchange the code for tokens and extract the refresh_token for you.\n\n5. Set calendar_id\n\n   Use \"primary\" to target your main Google Calendar, or find a specific calendar ID in Google Calendar settings under each calendar's details page."
 }

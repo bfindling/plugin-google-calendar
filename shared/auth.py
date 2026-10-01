@@ -3,7 +3,11 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
+import google.auth.transport.requests
 import requests
+from google.oauth2 import service_account
+
+CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar"
 
 
 def load_config() -> dict[str, Any]:
@@ -12,6 +16,16 @@ def load_config() -> dict[str, Any]:
 
 
 def get_access_token(config: dict[str, Any]) -> str:
+    # A service account never expires, unlike OAuth refresh tokens, which Google
+    # revokes after 7 days while the OAuth app is in "Testing" status.
+    if config.get("service_account_key"):
+        credentials = service_account.Credentials.from_service_account_info(
+            json.loads(config["service_account_key"]),
+            scopes=[CALENDAR_SCOPE],
+        )
+        credentials.refresh(google.auth.transport.requests.Request())
+        return credentials.token
+
     response = requests.post(
         "https://oauth2.googleapis.com/token",
         data={

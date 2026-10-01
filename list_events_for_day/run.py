@@ -1,6 +1,6 @@
 #!/usr/bin/env -S uv run
 # /// script
-# dependencies = ["requests"]
+# dependencies = ["google-auth", "requests"]
 # ///
 
 import json
